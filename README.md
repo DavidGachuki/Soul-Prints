@@ -1,20 +1,66 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 💫 Soul Prints
 
-# Run and deploy your AI Studio app
+> A modern, AI-powered dating experience that matches users based on deep personality compatibility rather than just appearances.
 
-This contains everything you need to run your app locally.
+## ✨ Features
 
-View your app in AI Studio: https://ai.studio/apps/temp/1
+- **Soul Print Matching** - Advanced AI-powered personality compatibility analysis
+- **AI Conversation Starters** - Intelligent icebreakers tailored to each match
+- **Deep Compatibility Insights** - Understand what makes you and your matches click
+- **Modern UI** - Beautiful, intuitive interface built with React and TypeScript
 
-## Run Locally
+## 🚀 Getting Started
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js (v16 or higher)
 
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Jamify2025/SoulPrints.git
+   cd SoulPrints
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   - Create a `.env.local` file in the root directory
+   - Add your Gemini API key:
+     ```
+     GEMINI_API_KEY=your_api_key_here
+     ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   - Navigate to `http://localhost:3000`
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React 19, TypeScript
+- **Build Tool:** Vite
+- **AI Integration:** Google Gemini AI
+- **Icons:** Lucide React
+- **Styling:** Modern CSS
+
+## 📦 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+---
+
+Made with ❤️ by the Soul Prints Team
