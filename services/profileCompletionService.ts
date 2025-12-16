@@ -145,12 +145,27 @@ export async function saveQuestionnaireAnswers(userId: string, answers: Partial<
             .eq('user_id', userId)
             .single();
 
-        const updateData: any = {
-            ...answers,
+        // MAP CAMELCASE TO SNAKE_CASE FOR DATABASE
+        const dbPayload: any = {
             last_updated: new Date().toISOString()
         };
 
-        // Update completed sections
+        if (answers.coreValues !== undefined) dbPayload.core_values = answers.coreValues;
+        if (answers.relationshipTimeline !== undefined) dbPayload.relationship_timeline = answers.relationshipTimeline;
+        if (answers.idealPartnerTraits !== undefined) dbPayload.ideal_partner_traits = answers.idealPartnerTraits;
+        if (answers.communicationPreference !== undefined) dbPayload.communication_preference = answers.communicationPreference;
+        if (answers.conflictResolution !== undefined) dbPayload.conflict_resolution = answers.conflictResolution;
+        if (answers.activityLevel !== undefined) dbPayload.activity_level = answers.activityLevel;
+        if (answers.socialPreference !== undefined) dbPayload.social_preference = answers.socialPreference;
+        if (answers.travelFrequency !== undefined) dbPayload.travel_frequency = answers.travelFrequency;
+        if (answers.absoluteDealbreakers !== undefined) dbPayload.absolute_dealbreakers = answers.absoluteDealbreakers;
+        if (answers.loveLanguagePrimary !== undefined) dbPayload.love_language_primary = answers.loveLanguagePrimary;
+        if (answers.loveLanguageSecondary !== undefined) dbPayload.love_language_secondary = answers.loveLanguageSecondary;
+        if (answers.idealWeekend !== undefined) dbPayload.ideal_weekend = answers.idealWeekend;
+        if (answers.lifeGoals !== undefined) dbPayload.life_goals = answers.lifeGoals;
+        if (answers.passionProject !== undefined) dbPayload.passion_project = answers.passionProject;
+
+        // Update completed sections logic (keeps camelCase checks as 'answers' is camelCase)
         const completedSections = new Set(existing?.completed_sections || []);
         if (answers.coreValues) completedSections.add('values');
         if (answers.relationshipTimeline) completedSections.add('goals');
@@ -160,16 +175,16 @@ export async function saveQuestionnaireAnswers(userId: string, answers: Partial<
         if (answers.loveLanguagePrimary) completedSections.add('personality');
         if (answers.idealWeekend || answers.lifeGoals) completedSections.add('deep');
 
-        updateData.completed_sections = Array.from(completedSections);
+        dbPayload.completed_sections = Array.from(completedSections);
 
         // Calculate completion percentage
-        updateData.completion_percentage = Math.round((completedSections.size / 7) * 100);
+        dbPayload.completion_percentage = Math.round((completedSections.size / 7) * 100);
 
         if (existing) {
             // Update existing
             const { error } = await supabase
                 .from('profile_questionnaire')
-                .update(updateData)
+                .update(dbPayload)
                 .eq('user_id', userId);
 
             if (error) throw error;
@@ -177,7 +192,7 @@ export async function saveQuestionnaireAnswers(userId: string, answers: Partial<
             // Insert new
             const { error } = await supabase
                 .from('profile_questionnaire')
-                .insert({ user_id: userId, ...updateData });
+                .insert({ user_id: userId, ...dbPayload });
 
             if (error) throw error;
         }

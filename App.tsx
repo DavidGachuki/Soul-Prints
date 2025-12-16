@@ -17,6 +17,7 @@ import { AdminView } from './components/AdminView';
 import { QuestionnaireModal } from './components/QuestionnaireModal';
 import { ProfileEnhancementBanner } from './components/ProfileEnhancementBanner';
 import { analyzeSoulPrint, calculateCompatibility, generateChatResponse } from './services/geminiService';
+import { getProfileCompletionStatus } from './services/profileCompletionService';
 import * as db from './services/databaseService';
 import { Sparkles, MessageCircle, ArrowLeft, Send, Search, Compass, LogOut, Heart, Flower, User, Coffee, Settings, Paperclip } from 'lucide-react';
 
@@ -149,6 +150,9 @@ const MOCK_PROFILES: MatchProfile[] = [
 
 export default function App() {
   // --- STATE ---
+  /* TEMP: Force Discovery & User */
+  /* const [currentView, setCurrentView] = useState<AppView>(AppView.DISCOVERY);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>({ id: 'debug-user', name: 'Debug', age: 25, bio: '', interests: [], imageUrl: '', gallery: [], deepAnswer1: '', deepAnswer2: '', soulAnalysis: '' } as any); */
   const [currentView, setCurrentView] = useState<AppView>(AppView.LANDING);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [matchedProfiles, setMatchedProfiles] = useState<MatchProfile[]>([]);
@@ -161,6 +165,8 @@ export default function App() {
   const [generatedNames, setGeneratedNames] = useState<any[]>([]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [profileCompletion, setProfileCompletion] = useState(100);
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
 
   // Simple Router
   useEffect(() => {
@@ -191,6 +197,22 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [currentUser]);
+
+  // Check Profile Completion
+  useEffect(() => {
+    if (currentUser) {
+      checkCompletion();
+      // Check banner dismissal
+      const dismissed = localStorage.getItem(`banner-dismissed-${currentUser.id}`);
+      setIsBannerDismissed(!!dismissed);
+    }
+  }, [currentUser, showQuestionnaire]);
+
+  const checkCompletion = async () => {
+    if (!currentUser) return;
+    const status = await getProfileCompletionStatus(currentUser.id);
+    setProfileCompletion(status.percentage);
+  };
 
   // Navigate to Admin
   const navigateToAdmin = () => {
@@ -524,10 +546,33 @@ export default function App() {
         {currentView === AppView.DISCOVERY && (
           <div className="flex-1 flex flex-col items-center p-4 md:p-12 pb-28 md:pb-12 relative overflow-y-auto w-full">
 
-            {/* Header for Discovery - Now Static */}
-            <div className="w-full max-w-7xl mb-8 md:mb-12 text-left">
-              <span className="text-xs font-bold tracking-[0.2em] text-editorial-accent uppercase block mb-1">Discover</span>
-              <h2 className="font-serif-display text-4xl text-warm-text">Curated Souls</h2>
+            {/* Editorial Header Layout */}
+            <div className="w-full max-w-7xl mb-8">
+              {currentUser && !showQuestionnaire && profileCompletion < 100 && !isBannerDismissed && (
+                <ProfileEnhancementBanner
+                  userId={currentUser.id}
+                  onStartQuestionnaire={() => setShowQuestionnaire(true)}
+                  onDismiss={() => {
+                    setIsBannerDismissed(true);
+                    localStorage.setItem(`banner-dismissed-${currentUser.id}`, 'true');
+                  }}
+                />
+              )}
+            </div>
+
+            <div className="w-full max-w-7xl mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 px-2 md:px-0">
+
+              {/* Left: Title */}
+              <div className="text-left">
+                <span className="text-xs font-bold tracking-[0.2em] text-editorial-accent uppercase block mb-2">Discover</span>
+                <h2 className="font-serif-display text-4xl md:text-5xl text-warm-text leading-tight">
+                  Curated <br className="hidden md:block" /> Souls
+                </h2>
+              </div>
+
+              {/* Right: Insight Widget (Banner) */}
+              {/* Right: Insight Widget (Banner) - REMOVED */}
+
             </div>
 
             <div className="w-full max-w-7xl flex items-center justify-center pb-12 relative">
@@ -551,13 +596,23 @@ export default function App() {
                 </div>
               )}
 
-              {/* QUESTIONNAIRE BANNER */}
-              {currentUser && (
-                <div className="w-full flex justify-center mb-0 px-4 md:px-0">
-                  <ProfileEnhancementBanner
-                    userId={currentUser.id}
-                    onStartQuestionnaire={() => setShowQuestionnaire(true)}
-                  />
+
+
+              {/* PERSISTENT FLOATING BADGE (If banner dismissed) */}
+              {currentUser && localStorage.getItem(`banner-dismissed-${currentUser.id}`) && !showQuestionnaire && (
+                <div className="fixed bottom-6 right-6 z-40 animate-fade-in-up">
+                  <button
+                    onClick={() => setShowQuestionnaire(true)}
+                    className="group flex items-center gap-3 bg-white pl-4 pr-2 py-2 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-stone-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all hover:-translate-y-1"
+                  >
+                    <div className="flex flex-col items-start mr-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">Profile Pending</span>
+                      <span className="text-sm font-serif-display text-stone-900 leading-none">Unlock Matches</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center group-hover:bg-purple-600 transition-colors">
+                      <Sparkles size={18} className="text-white" />
+                    </div>
+                  </button>
                 </div>
               )}
 
@@ -587,18 +642,7 @@ export default function App() {
           </div>
         )}
 
-        {/* QUESTIONNAIRE MODAL */}
-        {currentUser && (
-          <QuestionnaireModal
-            userId={currentUser.id}
-            isOpen={showQuestionnaire}
-            onClose={() => setShowQuestionnaire(false)}
-            onComplete={() => {
-              setShowQuestionnaire(false);
-              // Optionally reload matches with new data
-            }}
-          />
-        )}
+
 
         {/* CHAT VIEW - RETAINED BUT STYLED */}
         {currentView === AppView.CHAT && (
@@ -769,6 +813,20 @@ export default function App() {
         )}
 
       </main>
+
+      {/* QUESTIONNAIRE MODAL - MOVED TO ROOT */}
+      {currentUser && (
+        <QuestionnaireModal
+          userId={currentUser.id}
+          isOpen={showQuestionnaire}
+          onClose={() => setShowQuestionnaire(false)}
+          onComplete={() => {
+            setShowQuestionnaire(false);
+            // Optionally reload matches with new data
+          }}
+        />
+      )}
+
     </div>
   );
 }

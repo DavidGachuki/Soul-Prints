@@ -11,10 +11,12 @@
   "dependencies": {
     "@google/genai": "^1.33.0",
     "@supabase/supabase-js": "^2.87.3",
+    "framer-motion": "^12.23.26",
     "lucide-react": "^0.561.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "recharts": "^3.6.0"
+    "recharts": "^3.6.0",
+    "use-sound": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
