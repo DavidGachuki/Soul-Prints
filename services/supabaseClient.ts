@@ -19,9 +19,12 @@ export interface DatabaseProfile {
     bio: string | null;
     interests: string[];
     image_url: string | null;
+    gallery: string[] | null;
+    video_url: string | null;
     deep_answer_1: string;
     deep_answer_2: string;
     soul_analysis: string | null;
+    settings: any | null;
     created_at: string;
 }
 
@@ -39,6 +42,8 @@ export interface DatabaseMessage {
     match_id: string;
     sender_id: string;
     text: string;
+    type: string;
+    media_url: string | null;
     is_ai_generated: boolean;
     created_at: string;
 }

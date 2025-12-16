@@ -8,9 +8,17 @@ import {
 } from './types';
 import { Button } from './components/Button';
 import { ProfileCard } from './components/ProfileCard';
+import { EditorialSidebar } from './components/EditorialSidebar';
+import { StoryCard } from './components/StoryCard';
+import { OnboardingView } from './components/OnboardingView';
+import { ProfileView } from './components/ProfileView';
+import { SettingsView } from './components/SettingsView';
+import { AdminView } from './components/AdminView';
+import { QuestionnaireModal } from './components/QuestionnaireModal';
+import { ProfileEnhancementBanner } from './components/ProfileEnhancementBanner';
 import { analyzeSoulPrint, calculateCompatibility, generateChatResponse } from './services/geminiService';
 import * as db from './services/databaseService';
-import { Sparkles, MessageCircle, ArrowLeft, Send, Search, Compass, LogOut, Heart, User, Coffee } from 'lucide-react';
+import { Sparkles, MessageCircle, ArrowLeft, Send, Search, Compass, LogOut, Heart, Flower, User, Coffee, Settings, Paperclip } from 'lucide-react';
 
 // --- Mock Data ---
 const MOCK_PROFILES: MatchProfile[] = [
@@ -21,20 +29,25 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Looking for someone to share sunsets with.',
     interests: ['Photography', 'Poetry', 'Coffee'],
     imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2787&auto=format&fit=crop',
+    gallery: [
+      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=2787&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?q=80&w=2787'
+    ],
     deepAnswer1: 'I stay awake thinking about how big the universe is, and how small our worries are.',
     deepAnswer2: 'A slow morning with jazz records, rain against the window, and a warm mug.',
-    soulAnalysis: 'A gentle dreamer who finds beauty in the quiet moments.',
+    soulAnalysis: "A gentle dreamer who finds beauty in the quiet moments."
   },
   {
     id: '2',
     name: 'Liam',
     age: 28,
-    bio: 'Let’s build something beautiful together.',
+    bio: "Let's build something beautiful together.",
     interests: ['Architecture', 'Hiking', 'Cooking'],
     imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2787&auto=format&fit=crop',
-    deepAnswer1: 'Thinking about whether I’m making enough of a positive impact on the world.',
+    gallery: ['https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2787&auto=format&fit=crop'],
+    deepAnswer1: "Thinking about whether I'm making enough of a positive impact on the world.",
     deepAnswer2: 'Hiking up a mountain to catch the sunrise, then brunch with friends.',
-    soulAnalysis: 'A grounded spirit with a heart full of ambition and kindness.',
+    soulAnalysis: "A grounded spirit with a heart full of ambition and kindness."
   },
   {
     id: '3',
@@ -43,9 +56,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Art is my love language.',
     interests: ['Painting', 'Galleries', 'Wine'],
     imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2787&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=2787&auto=format&fit=crop'],
     deepAnswer1: 'The fear of time passing too quickly without capturing enough memories.',
     deepAnswer2: 'Waking up naturally, painting for hours, then a long walk in the park.',
-    soulAnalysis: 'A creative soul who treasures deep emotional expression.',
+    soulAnalysis: "A creative soul who treasures deep emotional expression."
   },
   {
     id: '4',
@@ -54,9 +68,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Seeking deep conversations and spontaneous adventures.',
     interests: ['Philosophy', 'Travel', 'Vinyl'],
     imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2487&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=2487&auto=format&fit=crop'],
     deepAnswer1: 'Wondering if we truly have free will or if our paths are written in the stars.',
     deepAnswer2: 'Getting lost in a foreign city with no map, just following the music.',
-    soulAnalysis: 'An intellectual wanderer seeking truth and authentic connection.',
+    soulAnalysis: "An intellectual wanderer seeking truth and authentic connection."
   },
   {
     id: '5',
@@ -65,9 +80,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Plant mom & tea enthusiast.',
     interests: ['Gardening', 'Yoga', 'Reading'],
     imageUrl: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2487&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=2487&auto=format&fit=crop'],
     deepAnswer1: 'The hope that I can heal the parts of myself I usually hide.',
     deepAnswer2: 'Yoga at sunrise, tending to my garden, and reading by the window.',
-    soulAnalysis: 'A nurturing spirit who values growth, peace, and inner light.',
+    soulAnalysis: "A nurturing spirit who values growth, peace, and inner light."
   },
   {
     id: '6',
@@ -76,9 +92,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Music says what words cannot.',
     interests: ['Guitar', 'Concerts', 'Road Trips'],
     imageUrl: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=2487&auto=format&fit=crop',
-    deepAnswer1: 'The melody that I can hear in my head but haven\'t been able to play yet.',
+    gallery: ['https://images.unsplash.com/photo-1519345182560-3f2917c472ef?q=80&w=2487&auto=format&fit=crop'],
+    deepAnswer1: "The melody that I can hear in my head but haven't been able to play yet.",
     deepAnswer2: 'Driving down the coast with the windows down and the perfect playlist.',
-    soulAnalysis: 'A passionate artist attuned to the rhythm of life and emotion.',
+    soulAnalysis: "A passionate artist attuned to the rhythm of life and emotion."
   },
   {
     id: '7',
@@ -87,9 +104,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Kindness is the highest form of intelligence.',
     interests: ['Volunteering', 'Baking', 'Dogs'],
     imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop'],
     deepAnswer1: 'Worrying if I told the people I love how much they mean to me.',
     deepAnswer2: 'Baking fresh bread, a long walk with my dog, and a family dinner.',
-    soulAnalysis: 'A warm-hearted giver who finds joy in nourishing others.',
+    soulAnalysis: "A warm-hearted giver who finds joy in nourishing others."
   },
   {
     id: '8',
@@ -98,9 +116,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Restoring old things to new life.',
     interests: ['Woodworking', 'History', 'Whiskey'],
     imageUrl: 'https://images.unsplash.com/photo-1504257432389-52343af06ae3?q=80&w=2568&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1504257432389-52343af06ae3?q=80&w=2568&auto=format&fit=crop'],
     deepAnswer1: 'The legacy I will leave behind when I am gone.',
     deepAnswer2: 'Working in the shop until noon, then a BBQ with close friends.',
-    soulAnalysis: 'A steady, reliable soul who values craftsmanship and tradition.',
+    soulAnalysis: "A steady, reliable soul who values craftsmanship and tradition."
   },
   {
     id: '9',
@@ -109,9 +128,10 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Stargazer and night owl.',
     interests: ['Astronomy', 'Sci-Fi', 'Camping'],
     imageUrl: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=2727&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?q=80&w=2727&auto=format&fit=crop'],
     deepAnswer1: 'The infinite silence of space and the possibility of life elsewhere.',
     deepAnswer2: 'Camping under a dark sky, identifying constellations, and total silence.',
-    soulAnalysis: 'A visionary thinker who finds comfort in the vastness of the unknown.',
+    soulAnalysis: "A visionary thinker who finds comfort in the vastness of the unknown."
   },
   {
     id: '10',
@@ -120,51 +140,112 @@ const MOCK_PROFILES: MatchProfile[] = [
     bio: 'Chasing waves and good vibes.',
     interests: ['Surfing', 'Ocean', 'Sustainability'],
     imageUrl: 'https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?q=80&w=2787&auto=format&fit=crop',
+    gallery: ['https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?q=80&w=2787&auto=format&fit=crop'],
     deepAnswer1: 'The state of our oceans and what the world will look like in 50 years.',
     deepAnswer2: 'Catching the early swell, a big breakfast, and a nap in a hammock.',
-    soulAnalysis: 'A free spirit deeply connected to nature and the flow of energy.',
+    soulAnalysis: "A free spirit deeply connected to nature and the flow of energy."
   }
 ];
 
 export default function App() {
-  // --- State Management ---
+  // --- STATE ---
   const [currentView, setCurrentView] = useState<AppView>(AppView.LANDING);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [potentialMatches, setPotentialMatches] = useState<MatchProfile[]>([]);
   const [matchedProfiles, setMatchedProfiles] = useState<MatchProfile[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [potentialMatches, setPotentialMatches] = useState<MatchProfile[]>(MOCK_PROFILES);
   const [chatSessions, setChatSessions] = useState<Record<string, Message[]>>({});
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
   const [chatInput, setChatInput] = useState('');
+  const [typingChatId, setTypingChatId] = useState<string | null>(null);
+  const [generatedNames, setGeneratedNames] = useState<any[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
 
-  // Onboarding Wizard State
-  const [onboardingStep, setOnboardingStep] = useState(1);
-  const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    deepAnswer1: '',
-    deepAnswer2: ''
-  });
+  // Simple Router
+  useEffect(() => {
+    // Handle initial load
+    const path = window.location.pathname;
+    if (path === '/admin') {
+      setCurrentView(AppView.ADMIN);
+    }
+
+    // Handle back/forward buttons
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/admin') {
+        setCurrentView(AppView.ADMIN);
+      } else {
+        // If back to root, verify if we have a user to determine view
+        if (currentUser) {
+          // Default to discovery or profile if logged in
+          // For simplicity in this non-auth router, we might just go to settings or discovery
+          // But since we track state, we rely on state for logged-in views usually.
+          setCurrentView(AppView.SETTINGS); // Fallback to settings if coming back from admin
+        } else {
+          setCurrentView(AppView.LANDING);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentUser]);
+
+  // Navigate to Admin
+  const navigateToAdmin = () => {
+    window.history.pushState({}, '', '/admin');
+    setCurrentView(AppView.ADMIN);
+  };
+
+  // Exit Admin
+  const exitAdmin = () => {
+    window.history.pushState({}, '', '/');
+    setCurrentView(AppView.SETTINGS);
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // --- Handlers ---
-  const handleCreateProfile = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleCreateProfile = async (data: any) => {
     setLoadingState(LoadingState.LOADING);
-    await new Promise(r => setTimeout(r, 2000)); // Simulate thoughtful analysis
 
-    const analysis = await analyzeSoulPrint(formData.name, formData.deepAnswer1, formData.deepAnswer2);
+    // Upload photo if user selected a file
+    let imageUrl = data.photoUrl;
+    const pendingFile = (window as any).__pendingPhotoFile;
+    if (pendingFile) {
+      const { uploadProfilePhoto } = await import('./services/storageService');
+      // Use temporary ID for upload, will update after profile creation
+      const tempId = 'temp-' + Date.now();
+      const uploadedUrl = await uploadProfilePhoto(pendingFile, tempId);
+      if (uploadedUrl) {
+        imageUrl = uploadedUrl;
+      }
+      delete (window as any).__pendingPhotoFile;
+    }
+
+    // Fallback to placeholder if no image
+    if (!imageUrl || imageUrl.startsWith('data:')) {
+      imageUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2960&auto=format&fit=crop';
+    }
+
+    // Synthesize Bio
+    const bio = `I'm a ${data.fridayEve < 40 ? 'quiet soul' : 'social spirit'} who loves ${data.energizer.toLowerCase()}. ${data.sharedVsDiff < 50 ? 'Looking for a partner to share hobbies with.' : 'Opposites attract!'}`;
+
+    // We pass the "Passion" as answer1 and "Sunday" as answer2 for now to map to legacy schema
+    const analysis = await analyzeSoulPrint(data.name, data.passion, data.idealSunday);
 
     const newUserData: Omit<UserProfile, 'id'> = {
-      name: formData.name,
-      age: parseInt(formData.age),
-      bio: 'Ready to connect.',
-      interests: ['Life', 'Love'],
-      imageUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2960&auto=format&fit=crop',
-      deepAnswer1: formData.deepAnswer1,
-      deepAnswer2: formData.deepAnswer2,
+      name: data.name,
+      age: parseInt(data.age),
+      bio: bio,
+      interests: [data.topic, data.energizer, 'Love'], // Initial interests from quiz
+      imageUrl: imageUrl,
+      gallery: [imageUrl], // Default gallery to profile pic
+      deepAnswer1: data.passion,
+      deepAnswer2: data.idealSunday,
       soulAnalysis: analysis
+
     };
 
     // Save profile to database
@@ -192,7 +273,11 @@ export default function App() {
   };
 
   const handleLike = async (profile: MatchProfile) => {
-    if (!currentUser) return;
+    if (!currentUser || isAnimating) return;
+
+    // Trigger Animation
+    setIsAnimating(true);
+    await new Promise(r => setTimeout(r, 600)); // Wait for animation to finish
 
     // Create match in database
     const matchId = await db.createMatch(
@@ -203,12 +288,14 @@ export default function App() {
     );
 
     if (!matchId) {
+      setIsAnimating(false);
       alert('Failed to create match. Please try again.');
       return;
     }
 
     setMatchedProfiles(prev => [profile, ...prev]);
     setPotentialMatches(prev => prev.filter(p => p.id !== profile.id));
+    setIsAnimating(false);
 
     // Send initial message to database
     const initialMsg = await db.sendMessage(
@@ -226,44 +313,75 @@ export default function App() {
     }
   };
 
+
   const handlePass = (profileId: string) => {
     setPotentialMatches(prev => prev.filter(p => p.id !== profileId));
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim() || !activeChatId || !currentUser) return;
+  const handleSendMessage = async (e?: React.FormEvent, mediaType?: 'image' | 'video', mediaUrl?: string) => {
+    if (e) e.preventDefault();
 
-    const targetProfile = matchedProfiles.find(p => p.id === activeChatId);
-    if (!targetProfile) return;
+    // Determine text content
+    const text = chatInput.trim();
+    if (!text && !mediaUrl) return; // Must have text OR media
 
-    // Get match ID
-    const matchId = await db.getMatchIdForProfiles(currentUser.id, activeChatId);
-    if (!matchId) return;
+    if (activeChatId && currentUser) {
+      // Clear input immediately if it was text
+      if (text) setChatInput('');
 
-    // Save user message to database
-    const savedMessage = await db.sendMessage(matchId, currentUser.id, chatInput, false);
-    if (!savedMessage) return;
+      // Send to DB
+      const sentMsg = await db.sendMessage(activeChatId, 'user-me', text, false, mediaType, mediaUrl);
+      if (!sentMsg) return;
 
-    setChatSessions(prev => ({
-      ...prev,
-      [activeChatId]: [...(prev[activeChatId] || []), savedMessage]
-    }));
-    setChatInput('');
+      // Optimistic Update (if listener is slow, but listener usually handles this)
+      // setChatSessions(prev => ({
+      //   ...prev,
+      //   [activeChatId]: [...(prev[activeChatId] || []), sentMsg]
+      // }));
 
-    // Generate AI response
-    const currentHistory = [...(chatSessions[activeChatId] || []), savedMessage];
-    const aiResponseText = await generateChatResponse(targetProfile, currentHistory, savedMessage.text);
+      // ... existing response logic
+      const userMessage = text;
 
-    // Save AI message to database
-    const aiMessage = await db.sendMessage(matchId, activeChatId, aiResponseText, true);
-    if (!aiMessage) return;
+      // Simulate AI Typing
+      setTypingChatId(activeChatId);
 
-    setChatSessions(prev => ({
-      ...prev,
-      [activeChatId]: [...(prev[activeChatId] || []), aiMessage]
-    }));
+      // Generate Response
+      const match = matchedProfiles.find(p => p.id === activeChatId);
+      if (match) {
+        const fullHistory = chatSessions[activeChatId] || [];
+        // Add user msg to history for context
+        const historyWithUser = [...fullHistory, sentMsg];
+        const responseText = await generateChatResponse(match, historyWithUser, mediaUrl ? '[Sent a media attachment]' : userMessage);
+
+        // Send AI Message
+        await db.sendMessage(activeChatId, match.id, responseText, true);
+        setTypingChatId(null);
+      }
+    }
   };
+
+  const handleSendMedia = async () => {
+    // Create hidden file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,video/*';
+
+    input.onchange = async (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file || !activeChatId) return;
+
+      const { uploadChatMedia } = await import('./services/storageService');
+      const result = await uploadChatMedia(file, activeChatId);
+
+      if (result) {
+        await handleSendMessage(undefined, result.type, result.url);
+      }
+    };
+
+    input.click();
+  };
+
+
 
   // Load matches and messages when user is set
   useEffect(() => {
@@ -291,6 +409,27 @@ export default function App() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatSessions, activeChatId]);
+
+  const handleUpdateProfile = async (updates: Partial<UserProfile>) => {
+    if (!currentUser) return;
+    setLoadingState(LoadingState.LOADING);
+    const updatedProfile = await db.updateProfile(currentUser.id, updates);
+    if (updatedProfile) {
+      setCurrentUser(updatedProfile);
+    } else {
+      alert('Failed to update profile.');
+    }
+    setLoadingState(LoadingState.IDLE);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setMatchedProfiles([]);
+    setPotentialMatches([]);
+    setChatSessions({});
+    setActiveChatId(null);
+    setCurrentView(AppView.LANDING);
+  };
 
 
   // --- LANDING PAGE ---
@@ -353,97 +492,14 @@ export default function App() {
   // --- ONBOARDING ---
   if (currentView === AppView.PROFILE_CREATION) {
     return (
-      <div className="min-h-screen bg-warm-bg flex items-center justify-center p-6 relative">
-        {/* Background Accent */}
-        <div className="absolute inset-0 bg-gradient-warm opacity-50"></div>
+      <OnboardingView onComplete={handleCreateProfile} isLoading={loadingState === LoadingState.LOADING} />
+    );
+  }
 
-        <div className="w-full max-w-xl relative z-10">
-          <div className="bg-white rounded-[2rem] shadow-xl p-8 md:p-12 relative overflow-hidden">
-
-            {/* Progress Indicator */}
-            <div className="flex gap-2 mb-8">
-              <div className={`h-1.5 rounded-full flex-1 transition-colors duration-500 ${onboardingStep >= 1 ? 'bg-brand-primary' : 'bg-gray-100'}`}></div>
-              <div className={`h-1.5 rounded-full flex-1 transition-colors duration-500 ${onboardingStep >= 2 ? 'bg-brand-primary' : 'bg-gray-100'}`}></div>
-            </div>
-
-            <div className="mb-6 text-center">
-              <h2 className="font-serif text-3xl font-bold text-warm-text mb-2">
-                {onboardingStep === 1 ? "Let's introduce you." : "What makes you, you?"}
-              </h2>
-              <p className="text-warm-subtext">
-                {onboardingStep === 1 ? "We'll start with the basics." : "The answers that reveal your heart."}
-              </p>
-            </div>
-
-            {onboardingStep === 1 ? (
-              <div className="space-y-6 animate-fade-in">
-                <div className="space-y-1">
-                  <label className="block text-sm font-bold text-warm-text ml-1">First Name</label>
-                  <input
-                    autoFocus
-                    type="text"
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-lg text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:bg-white transition-all placeholder:text-gray-300"
-                    placeholder="e.g., Sarah"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-bold text-warm-text ml-1">Age</label>
-                  <input
-                    type="number"
-                    value={formData.age}
-                    onChange={e => setFormData({ ...formData, age: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-lg text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:bg-white transition-all placeholder:text-gray-300"
-                    placeholder="25"
-                  />
-                </div>
-                <div className="pt-4">
-                  <Button className="w-full" variant="primary" onClick={() => setOnboardingStep(2)} disabled={!formData.name || !formData.age}>
-                    Continue
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6 animate-fade-in">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-brand-secondary">
-                    <Coffee className="w-4 h-4" />
-                    Deep Question 01
-                  </label>
-                  <p className="text-lg font-serif text-warm-text">What keeps you up at night?</p>
-                  <textarea
-                    value={formData.deepAnswer1}
-                    onChange={e => setFormData({ ...formData, deepAnswer1: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:bg-white transition-all resize-none min-h-[100px]"
-                    placeholder="Is it excitement for the future, or perhaps a worry..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-brand-secondary">
-                    <Sparkles className="w-4 h-4" />
-                    Deep Question 02
-                  </label>
-                  <p className="text-lg font-serif text-warm-text">Describe your perfect Sunday.</p>
-                  <textarea
-                    value={formData.deepAnswer2}
-                    onChange={e => setFormData({ ...formData, deepAnswer2: e.target.value })}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:bg-white transition-all resize-none min-h-[100px]"
-                    placeholder="Morning coffee, a walk in the park..."
-                  />
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <Button variant="secondary" onClick={() => setOnboardingStep(1)}>Back</Button>
-                  <Button className="flex-1" variant="primary" onClick={handleCreateProfile} isLoading={loadingState === LoadingState.LOADING} disabled={!formData.deepAnswer1 || !formData.deepAnswer2}>
-                    Find My Soul Match
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+  // --- ADMIN VIEW (Standalone) ---
+  if (currentView === AppView.ADMIN) {
+    return (
+      <AdminView onBack={exitAdmin} />
     );
   }
 
@@ -453,205 +509,265 @@ export default function App() {
   return (
     <div className="flex h-screen w-full bg-warm-bg text-warm-text font-sans overflow-hidden">
 
-      {/* Sidebar Navigation */}
-      <aside className={`
-        fixed z-50 bottom-0 left-0 right-0 md:static md:w-64 md:h-full 
-        bg-white border-t md:border-t-0 md:border-r border-gray-100
-        flex md:flex-col items-center md:items-stretch justify-around md:justify-start md:p-6 md:gap-2
-        transition-transform duration-300 shadow-sm md:shadow-none
-        ${currentView === AppView.LANDING || currentView === AppView.PROFILE_CREATION ? 'hidden' : ''}
-        ${isChatMobile ? 'hidden md:flex' : 'flex'}
-      `}>
-        <div className="hidden md:flex items-center gap-2 px-2 mb-8 mt-2">
-          <Heart className="w-6 h-6 fill-brand-primary text-brand-primary" />
-          <span className="font-serif font-bold text-xl text-warm-text">Soul Prints</span>
-        </div>
+      {/* NEW NAVIGATION SIDEBAR */}
+      <EditorialSidebar
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        currentUser={currentUser}
+        activeChatId={activeChatId}
+      />
 
-        <button
-          onClick={() => { setActiveChatId(null); setCurrentView(AppView.DISCOVERY); }}
-          className={`p-3 md:px-4 md:py-3 rounded-2xl transition-all flex items-center gap-3 ${currentView === AppView.DISCOVERY ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-warm-subtext hover:bg-gray-50'}`}
-        >
-          <Compass className="w-6 h-6" />
-          <span className="hidden md:inline">Discover</span>
-        </button>
+      {/* Main Content Area */}
+      <main className="flex-1 relative h-full flex overflow-hidden bg-white md:rounded-l-[3rem] shadow-[-20px_0_60px_-15px_rgba(0,0,0,0.05)] border-l border-editorial">
 
-        <button
-          onClick={() => setCurrentView(AppView.CHAT)}
-          className={`p-3 md:px-4 md:py-3 rounded-2xl transition-all flex items-center gap-3 relative ${currentView === AppView.CHAT ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-warm-subtext hover:bg-gray-50'}`}
-        >
-          <MessageCircle className="w-6 h-6" />
-          <span className="hidden md:inline">Messages</span>
-          {matchedProfiles.length > 0 && <span className="absolute top-3 right-3 md:top-auto md:bottom-auto md:right-4 w-2 h-2 bg-brand-primary rounded-full"></span>}
-        </button>
-
-        <div className="hidden md:block mt-auto border-t border-gray-100 pt-6">
-          <div className="flex items-center gap-3 px-2 mb-4">
-            <img src={currentUser?.imageUrl} className="w-10 h-10 rounded-full object-cover" alt="Me" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{currentUser?.name}</p>
-              <p className="text-xs text-warm-subtext truncate">Online</p>
-            </div>
-          </div>
-          <button onClick={() => window.location.reload()} className="flex items-center gap-3 px-2 text-sm text-warm-subtext hover:text-red-400 transition-colors">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 relative h-full flex overflow-hidden">
-
-        {/* DISCOVERY VIEW */}
+        {/* DISCOVERY VIEW - EDITORIAL STYLE */}
         {currentView === AppView.DISCOVERY && (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-warm -z-10"></div>
+          <div className="flex-1 flex flex-col items-center p-4 md:p-12 pb-28 md:pb-12 relative overflow-y-auto w-full">
 
-            {potentialMatches.length > 0 ? (
-              <div className="w-full max-w-md animate-fade-in relative z-10">
-                <ProfileCard
-                  profile={potentialMatches[0]}
-                  onLike={() => handleLike(potentialMatches[0])}
-                  onPass={() => handlePass(potentialMatches[0].id)}
-                />
-              </div>
-            ) : (
-              <div className="text-center z-10 max-w-md bg-white p-8 rounded-[2rem] shadow-xl">
-                <div className="w-20 h-20 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-primary">
-                  <User className="w-10 h-10" />
-                </div>
-                <h3 className="font-serif font-bold text-3xl mb-3 text-warm-text">All Caught Up</h3>
-                <p className="text-warm-subtext mb-8">
-                  You've seen all the potential soul connections in your area for now. Check back soon for new hearts.
-                </p>
-                <Button variant="secondary" onClick={() => setPotentialMatches(MOCK_PROFILES.filter(p => !matchedProfiles.find(m => m.id === p.id)))}>
-                  Review Passed Profiles
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CHAT VIEW */}
-        {currentView === AppView.CHAT && (
-          <div className="flex-1 flex w-full bg-white md:bg-warm-bg md:p-6 gap-6">
-            {/* Chat List (Card style on Desktop) */}
-            <div className={`
-                w-full md:w-80 bg-white md:rounded-[2rem] md:shadow-sm border-r md:border-none border-gray-100
-                flex flex-col overflow-hidden
-                ${activeChatId ? 'hidden md:flex' : 'flex'}
-              `}>
-              <div className="p-6 border-b border-gray-50">
-                <h2 className="font-serif font-bold text-2xl text-warm-text">Connections</h2>
-              </div>
-              <div className="flex-1 overflow-y-auto p-2">
-                {matchedProfiles.length === 0 ? (
-                  <div className="p-8 text-center text-warm-subtext text-sm">
-                    <p>No connections yet.</p>
-                    <p className="mt-2 text-xs">Go to Discovery to find your match!</p>
-                  </div>
-                ) : (
-                  matchedProfiles.map(match => (
-                    <div
-                      key={match.id}
-                      onClick={() => setActiveChatId(match.id)}
-                      className={`p-4 rounded-xl cursor-pointer transition-all flex gap-3 hover:bg-gray-50 ${activeChatId === match.id ? 'bg-brand-primary/5' : ''}`}
-                    >
-                      <img src={match.imageUrl} className="w-12 h-12 rounded-full object-cover" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-baseline mb-1">
-                          <h3 className={`font-bold text-base ${activeChatId === match.id ? 'text-brand-primary' : 'text-warm-text'}`}>{match.name}</h3>
-                          <span className="text-xs text-brand-primary font-bold">{match.compatibilityScore}%</span>
-                        </div>
-                        <p className="text-sm text-warm-subtext truncate">
-                          {chatSessions[match.id]?.slice(-1)[0]?.text || 'Say hello...'}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+            {/* Header for Discovery - Now Static */}
+            <div className="w-full max-w-7xl mb-8 md:mb-12 text-left">
+              <span className="text-xs font-bold tracking-[0.2em] text-editorial-accent uppercase block mb-1">Discover</span>
+              <h2 className="font-serif-display text-4xl text-warm-text">Curated Souls</h2>
             </div>
 
-            {/* Chat Area (Card style on Desktop) */}
-            <div className={`
-                flex-1 flex flex-col bg-white md:rounded-[2rem] md:shadow-sm overflow-hidden relative
-                ${!activeChatId ? 'hidden md:flex' : 'flex fixed inset-0 md:static z-50'}
-              `}>
-              {activeChatId ? (
-                <>
-                  {/* Header */}
-                  <div className="h-20 border-b border-gray-50 flex items-center px-6 justify-between bg-white/90 backdrop-blur-md sticky top-0 z-20">
-                    <div className="flex items-center gap-4">
-                      <button onClick={() => setActiveChatId(null)} className="md:hidden text-warm-subtext hover:text-warm-text"><ArrowLeft /></button>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full overflow-hidden">
-                          <img src={matchedProfiles.find(p => p.id === activeChatId)?.imageUrl} className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <h3 className="font-serif font-bold text-lg text-warm-text">{matchedProfiles.find(p => p.id === activeChatId)?.name}</h3>
-                          <p className="text-xs text-brand-secondary font-medium">Soul Match</p>
-                        </div>
-                      </div>
+            <div className="w-full max-w-7xl flex items-center justify-center pb-12 relative">
+              {/* Animation Overlay */}
+              {isAnimating && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                  {/* Central Main Flower */}
+                  <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 animate-flower-burst" style={{ '--tw-translate-x': '0px' } as React.CSSProperties}>
+                    <div className="w-24 h-24 bg-editorial-accent rounded-full flex items-center justify-center shadow-xl">
+                      <Flower className="w-12 h-12 text-white fill-white" />
                     </div>
                   </div>
-
-                  {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/50">
-                    {/* Insight Banner */}
-                    {matchedProfiles.find(p => p.id === activeChatId)?.compatibilityReason && (
-                      <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-center mx-auto max-w-lg">
-                        <Heart className="w-4 h-4 fill-orange-200 text-orange-400 mx-auto mb-2" />
-                        <p className="text-sm text-warm-subtext italic">
-                          "{matchedProfiles.find(p => p.id === activeChatId)?.compatibilityReason}"
-                        </p>
-                      </div>
-                    )}
-
-                    {chatSessions[activeChatId]?.map((msg) => (
-                      <div key={msg.id} className={`flex ${msg.senderId === 'user-me' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] px-6 py-3 rounded-2xl text-base leading-relaxed shadow-sm ${msg.senderId === 'user-me'
-                            ? 'bg-brand-primary text-white rounded-tr-none'
-                            : 'bg-white text-warm-text border border-gray-100 rounded-tl-none'
-                          }`}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={chatEndRef} />
+                  {/* Left Petal */}
+                  <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 animate-flower-burst" style={{ animationDelay: '0.1s', '--tw-translate-x': '-60px' } as React.CSSProperties}>
+                    <Flower className="w-12 h-12 text-editorial-accent fill-editorial-accent/20" />
                   </div>
-
-                  {/* Input */}
-                  <div className="p-4 border-t border-gray-50 bg-white">
-                    <form onSubmit={handleSendMessage} className="flex gap-3 max-w-4xl mx-auto">
-                      <input
-                        type="text"
-                        value={chatInput}
-                        onChange={e => setChatInput(e.target.value)}
-                        className="flex-1 bg-gray-50 border-none rounded-full px-6 py-4 text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 placeholder:text-gray-400"
-                        placeholder="Type a message..."
-                      />
-                      <button
-                        type="submit"
-                        disabled={!chatInput.trim()}
-                        className="w-14 h-14 rounded-full bg-brand-primary text-white flex items-center justify-center hover:bg-brand-primary/90 transition-colors shadow-lg shadow-brand-primary/30 disabled:opacity-50 disabled:shadow-none"
-                      >
-                        <Send className="w-6 h-6 ml-0.5" />
-                      </button>
-                    </form>
+                  {/* Right Petal */}
+                  <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 animate-flower-burst" style={{ animationDelay: '0.15s', '--tw-translate-x': '60px' } as React.CSSProperties}>
+                    <Flower className="w-12 h-12 text-editorial-accent fill-editorial-accent/20" />
                   </div>
-                </>
+                </div>
+              )}
+
+              {/* QUESTIONNAIRE BANNER */}
+              {currentUser && (
+                <div className="w-full flex justify-center mb-0 px-4 md:px-0">
+                  <ProfileEnhancementBanner
+                    userId={currentUser.id}
+                    onStartQuestionnaire={() => setShowQuestionnaire(true)}
+                  />
+                </div>
+              )}
+
+              {potentialMatches.length > 0 ? (
+                <div className={`w-full flex justify-center transition-all ${isAnimating ? 'animate-slide-out' : 'animate-fade-in'}`}>
+                  <StoryCard
+                    profile={potentialMatches[0]}
+                    onLike={() => handleLike(potentialMatches[0])}
+                    onPass={() => handlePass(potentialMatches[0].id)}
+                  />
+                </div>
               ) : (
-                <div className="h-full flex flex-col items-center justify-center text-warm-subtext bg-gray-50/50">
-                  <div className="w-24 h-24 bg-white rounded-full shadow-sm flex items-center justify-center mb-6">
-                    <MessageCircle className="w-10 h-10 text-brand-secondary/50" />
+                <div className="text-center max-w-md p-12 bg-warm-surface border border-editorial rounded-2xl">
+                  <div className="w-16 h-16 bg-editorial-secondary rounded-full flex items-center justify-center mx-auto mb-6">
+                    <User className="w-8 h-8 text-warm-subtext" />
                   </div>
-                  <p className="font-serif text-xl text-warm-text">Select a conversation</p>
-                  <p className="text-sm mt-2">Pick a person from the list to start chatting.</p>
+                  <h3 className="font-serif-display text-3xl mb-4 text-warm-text">The end of the edition.</h3>
+                  <p className="text-warm-subtext mb-8 leading-relaxed font-light">
+                    You've reviewed all curated profiles for today.<br />Check back tomorrow for the next issue.
+                  </p>
+                  <Button variant="secondary" onClick={() => setPotentialMatches(MOCK_PROFILES.filter(p => !matchedProfiles.find(m => m.id === p.id)))}>
+                    Review Previous Issues
+                  </Button>
                 </div>
               )}
             </div>
           </div>
         )}
+
+        {/* QUESTIONNAIRE MODAL */}
+        {currentUser && (
+          <QuestionnaireModal
+            userId={currentUser.id}
+            isOpen={showQuestionnaire}
+            onClose={() => setShowQuestionnaire(false)}
+            onComplete={() => {
+              setShowQuestionnaire(false);
+              // Optionally reload matches with new data
+            }}
+          />
+        )}
+
+        {/* CHAT VIEW - RETAINED BUT STYLED */}
+        {currentView === AppView.CHAT && (
+          <div className="flex-1 flex w-full bg-white gap-6 md:p-8">
+            {/* Styling tweak for chat within new container */}
+            <div className="w-full h-full flex gap-6">
+              {/* Chat List */}
+              <div className={`
+                w-full md:w-80 h-full border-r border-editorial
+                flex flex-col overflow-hidden
+                ${activeChatId ? 'hidden md:flex' : 'flex'}
+              `}>
+                <div className="pb-6 border-b border-editorial px-2">
+                  <h2 className="font-serif-display text-2xl text-warm-text">Conversations</h2>
+                </div>
+                <div className="flex-1 overflow-y-auto pt-4 pr-2">
+                  {matchedProfiles.length === 0 ? (
+                    <div className="pt-20 text-center text-warm-subtext text-sm">
+                      <p>No conversations started.</p>
+                    </div>
+                  ) : (
+                    matchedProfiles.map(match => (
+                      <div
+                        key={match.id}
+                        onClick={() => setActiveChatId(match.id)}
+                        className={`p-4 rounded-lg cursor-pointer transition-all flex gap-3 mb-2 hover:bg-warm-bg ${activeChatId === match.id ? 'bg-[#FAF9F6] border-l-2 border-editorial-accent' : ''}`}
+                      >
+                        <img src={match.imageUrl} className="w-12 h-12 rounded-full object-cover border border-editorial" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h3 className={`font-bold text-base font-serif-display ${activeChatId === match.id ? 'text-editorial-accent' : 'text-warm-text'}`}>{match.name}</h3>
+                          </div>
+                          <p className="text-xs text-warm-subtext truncate font-medium uppercase tracking-wide">
+                            {chatSessions[match.id]?.slice(-1)[0]?.text || 'Start writing...'}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className={`
+                flex-1 flex flex-col h-full overflow-hidden relative
+                ${!activeChatId ? 'hidden md:flex' : 'flex fixed inset-0 md:static z-50 bg-white'}
+              `}>
+                {activeChatId ? (
+                  <>
+                    {/* Header */}
+                    <div className="h-20 border-b border-editorial flex items-center px-6 justify-between bg-white/95 backdrop-blur-sm sticky top-0 z-20">
+                      <div className="flex items-center gap-4">
+                        <button onClick={() => setActiveChatId(null)} className="md:hidden text-warm-subtext hover:text-warm-text"><ArrowLeft /></button>
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full overflow-hidden border border-editorial">
+                            <img src={matchedProfiles.find(p => p.id === activeChatId)?.imageUrl} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <h3 className="font-serif-display text-xl text-warm-text">{matchedProfiles.find(p => p.id === activeChatId)?.name}</h3>
+                            <p className="text-[10px] tracking-widest text-editorial-accent uppercase font-bold">The Soul Edit</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto p-8 pb-28 md:pb-8 space-y-8 bg-[#FAFAFA]">
+                      {/* Insight Banner */}
+                      {matchedProfiles.find(p => p.id === activeChatId)?.compatibilityReason && (
+                        <div className="bg-editorial-secondary/20 border border-editorial-secondary rounded-lg p-6 text-center mx-auto max-w-lg mb-8">
+                          <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase block mb-2">Why you connect</span>
+                          <p className="font-serif text-lg text-warm-text italic leading-relaxed">
+                            "{matchedProfiles.find(p => p.id === activeChatId)?.compatibilityReason}"
+                          </p>
+                        </div>
+                      )}
+
+                      {chatSessions[activeChatId]?.map((msg) => (
+                        <div key={msg.id} className={`flex ${msg.senderId === 'user-me' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[75%] px-8 py-4 text-base leading-relaxed shadow-sm ${msg.senderId === 'user-me'
+                            ? 'bg-editorial-accent text-white rounded-2xl rounded-tr-sm'
+                            : 'bg-white text-warm-text border border-editorial rounded-2xl rounded-tl-sm'
+                            }`}>
+                            {/* Render Media if present */}
+                            {msg.type === 'image' && msg.mediaUrl && (
+                              <div className="mb-3 rounded-lg overflow-hidden">
+                                <img src={msg.mediaUrl} alt="Attachment" className="w-full h-auto object-cover max-h-64" />
+                              </div>
+                            )}
+                            {msg.type === 'video' && msg.mediaUrl && (
+                              <div className="mb-3 rounded-lg overflow-hidden">
+                                <video src={msg.mediaUrl} controls className="w-full h-auto max-h-64 rounded-lg" />
+                              </div>
+                            )}
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Typing Indicator */}
+                      {typingChatId === activeChatId && (
+                        <div className="flex justify-start animate-fade-in">
+                          <div className="bg-white text-warm-text border border-editorial rounded-2xl rounded-tl-sm px-6 py-4 shadow-sm flex items-center gap-1">
+                            <span className="w-2 h-2 bg-warm-subtext rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                            <span className="w-2 h-2 bg-warm-subtext rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="w-2 h-2 bg-warm-subtext rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                          </div>
+                        </div>
+                      )}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Input */}
+                    <div className="p-6 border-t border-editorial bg-white">
+                      <form onSubmit={(e) => handleSendMessage(e)} className="flex gap-4 max-w-4xl mx-auto items-center">
+                        <button
+                          type="button"
+                          onClick={handleSendMedia}
+                          className="p-3 rounded-full text-warm-subtext hover:bg-gray-100 hover:text-editorial-accent transition-colors"
+                          title="Attach Media"
+                        >
+                          <Paperclip size={20} />
+                        </button>
+                        <input
+                          type="text"
+                          value={chatInput}
+                          onChange={e => setChatInput(e.target.value)}
+                          className="flex-1 bg-warm-bg border-none rounded-lg px-6 py-4 text-warm-text focus:outline-none focus:ring-1 focus:ring-editorial-accent placeholder:text-warm-subtext font-light"
+                          placeholder="Write a message..."
+                        />
+                        <button
+                          type="submit"
+                          disabled={!chatInput.trim()}
+                          className="px-8 py-3 rounded-lg bg-warm-text text-white font-medium hover:bg-black transition-colors disabled:opacity-50"
+                        >
+                          Send
+                        </button>
+                      </form>
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-full flex flex-col items-center justify-center text-warm-subtext bg-[#FAFAFA]">
+                    <div className="w-20 h-20 border border-editorial rounded-full flex items-center justify-center mb-6">
+                      <MessageCircle className="w-8 h-8 text-warm-subtext" />
+                    </div>
+                    <p className="font-serif-display text-2xl text-warm-text">Select a Story</p>
+                    <p className="text-sm mt-3 tracking-wide uppercase">Open a conversation to begin</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PROFILE VIEW */}
+        {currentView === AppView.PROFILE && currentUser && (
+          <ProfileView user={currentUser} onUpdateProfile={handleUpdateProfile} />
+        )}
+
+        {/* SETTINGS VIEW */}
+        {currentView === AppView.SETTINGS && currentUser && (
+          <SettingsView
+            user={currentUser}
+            onUpdateProfile={handleUpdateProfile}
+            onLogout={handleLogout}
+            onAdminAccess={navigateToAdmin}
+          />
+        )}
+
       </main>
     </div>
   );

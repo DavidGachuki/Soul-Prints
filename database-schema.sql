@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   bio TEXT,
   interests TEXT[],
   image_url TEXT,
+  gallery TEXT[],
+  video_url TEXT,
   deep_answer_1 TEXT NOT NULL,
   deep_answer_2 TEXT NOT NULL,
   soul_analysis TEXT,
@@ -35,6 +37,8 @@ CREATE TABLE IF NOT EXISTS messages (
   match_id UUID REFERENCES matches(id) ON DELETE CASCADE,
   sender_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   text TEXT NOT NULL,
+  type TEXT DEFAULT 'text',
+  media_url TEXT,
   is_ai_generated BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
