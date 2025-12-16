@@ -2,7 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 import { UserProfile, MatchProfile, Message } from '../types';
 
 // Initialize Gemini
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 // Helper to analyze a user's soul print
 export const analyzeSoulPrint = async (
@@ -11,6 +12,11 @@ export const analyzeSoulPrint = async (
   answer2: string
 ): Promise<string> => {
   try {
+    if (!ai) {
+      console.warn('Gemini API key not configured. Using fallback.');
+      return "A beautiful soul with stories yet to be shared.";
+    }
+
     const model = 'gemini-2.5-flash';
     const prompt = `
       Analyze the "Soul Print" of a user named ${name} for a relationship-focused app called "Soul Prints".
@@ -39,6 +45,11 @@ export const calculateCompatibility = async (
   match: MatchProfile
 ): Promise<{ score: number; reason: string }> => {
   try {
+    if (!ai) {
+      console.warn('Gemini API key not configured. Using fallback compatibility.');
+      return { score: 80 + Math.floor(Math.random() * 15), reason: "A promising connection worth exploring." };
+    }
+
     const model = 'gemini-2.5-flash';
     const prompt = `
       Analyze the potential connection between two people.
@@ -82,9 +93,9 @@ export const generateChatResponse = async (
 ): Promise<string> => {
   try {
     const model = 'gemini-2.5-flash';
-    
+
     // Construct simple history string
-    const context = history.slice(-5).map(m => 
+    const context = history.slice(-5).map(m =>
       `${m.senderId === match.id ? match.name : 'User'}: ${m.text}`
     ).join('\n');
 
