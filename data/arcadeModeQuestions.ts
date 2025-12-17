@@ -105,7 +105,7 @@ export const VALUE_BUBBLES = [
 export const LIFESTYLE_CARDS = [
     {
         id: 'friday_night',
-        text: 'Friday night: Would you rather go to a big party or stay home with a book?',
+        text: 'Friday night: I prefer going to big parties over staying home',
         yesValue: { social_preference: 'extroverted' },
         noValue: { social_preference: 'introverted' },
         dimension: 'lifestyle' as const,
@@ -113,7 +113,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'travel_style',
-        text: 'Travel: I plan every detail vs. I go wherever the day takes me',
+        text: 'Travel: I prefer spontaneous adventures over detailed planning',
         yesValue: { travel_style: 'spontaneous' },
         noValue: { travel_style: 'planned' },
         dimension: 'lifestyle' as const,
@@ -121,7 +121,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'social_openness',
-        text: 'Meeting someone new: I open up quickly vs. I stay reserved at first',
+        text: 'Meeting someone new: I open up quickly and share personal things',
         yesValue: { openness: 'high' },
         noValue: { openness: 'low' },
         dimension: 'personality' as const,
@@ -129,7 +129,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'hosting',
-        text: 'Out of town guest: You love hosting and making them happy',
+        text: 'Having an out-of-town guest: I love hosting and making them comfortable',
         yesValue: { hospitality: 'high' },
         noValue: { hospitality: 'independent' },
         dimension: 'lifestyle' as const,
@@ -137,7 +137,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'surprises',
-        text: 'I like to plan surprises (birthdays, trips) for people I care about',
+        text: 'I enjoy planning surprises (birthdays, trips) for people I care about',
         yesValue: { acts_of_service: 'high' },
         noValue: { acts_of_service: 'low' },
         dimension: 'communication' as const,
@@ -145,7 +145,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'routine',
-        text: 'I prefer a fixed weekly schedule vs. my plans change week by week',
+        text: 'I prefer having a fixed weekly schedule and routine',
         yesValue: { conscientiousness: 'high' },
         noValue: { conscientiousness: 'low' },
         dimension: 'personality' as const,
@@ -153,7 +153,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'conflict_timing',
-        text: 'When upset, I prefer to talk immediately vs. take time to cool off',
+        text: 'When upset: I prefer to talk about it immediately rather than wait',
         yesValue: { conflict_resolution: 'discuss_immediately' },
         noValue: { conflict_resolution: 'need_space' },
         dimension: 'communication' as const,
@@ -161,7 +161,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'evening_activity',
-        text: 'Which sounds more fun: a night out dancing vs. cozy movie night in?',
+        text: 'Fun evening: I\'d choose a night out dancing over a cozy movie night in',
         yesValue: { activity_level: 'very_active' },
         noValue: { activity_level: 'relaxed' },
         dimension: 'lifestyle' as const,
@@ -169,7 +169,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'planning_preference',
-        text: 'I make to-do lists for fun vs. I feel constrained by too many plans',
+        text: 'I make to-do lists for fun and enjoy being organized',
         yesValue: { organization: 'high' },
         noValue: { organization: 'low' },
         dimension: 'personality' as const,
@@ -177,7 +177,7 @@ export const LIFESTYLE_CARDS = [
     },
     {
         id: 'change_reaction',
-        text: 'If faced with a surprise life change (e.g. moving cities), I feel excited vs. anxious',
+        text: 'Surprise life change (like moving cities): I feel more excited than anxious',
         yesValue: { emotional_stability: 'high', openness_to_change: 'high' },
         noValue: { emotional_stability: 'low', openness_to_change: 'low' },
         dimension: 'personality' as const,
