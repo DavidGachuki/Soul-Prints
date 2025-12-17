@@ -251,23 +251,41 @@ export default function App() {
       imageUrl = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=2960&auto=format&fit=crop';
     }
 
-    // Synthesize Bio
-    const bio = `I'm a ${data.fridayEve < 40 ? 'quiet soul' : 'social spirit'} who loves ${data.energizer.toLowerCase()}. ${data.sharedVsDiff < 50 ? 'Looking for a partner to share hobbies with.' : 'Opposites attract!'}`;
+    // Generate Bio from NEW inclusive fields
+    const personalityTraits = data.selfDescription?.slice(0, 2).join(' and ') || 'authentic';
+    const languageText = data.languages && data.languages.length > 0
+      ? `I speak ${data.languages.length} language${data.languages.length > 1 ? 's' : ''}.`
+      : '';
+    const bio = `${personalityTraits.charAt(0).toUpperCase() + personalityTraits.slice(1)} person seeking ${data.relationshipGoals?.toLowerCase() || 'meaningful connections'}. ${languageText}`.trim();
 
-    // We pass the "Passion" as answer1 and "Sunday" as answer2 for now to map to legacy schema
-    const analysis = await analyzeSoulPrint(data.name, data.passion, data.idealSunday);
+    // Use relationship goals and self-description for deep answers
+    const deepAnswer1 = data.relationshipGoals
+      ? `I'm looking for ${data.relationshipGoals.toLowerCase().replace('_', ' ')}.`
+      : 'Seeking a meaningful connection that grows over time.';
+
+    const deepAnswer2 = data.selfDescription && data.selfDescription.length > 0
+      ? `I'd describe myself as ${data.selfDescription.join(', ').toLowerCase()}.`
+      : 'Someone who values authenticity and genuine connection.';
 
     const newUserData: Omit<UserProfile, 'id'> = {
       name: data.name,
       age: parseInt(data.age),
       bio: bio,
-      interests: [data.topic, data.energizer, 'Love'], // Initial interests from quiz
+      interests: data.selfDescription?.slice(0, 3) || ['Connection', 'Growth', 'Love'],
       imageUrl: imageUrl,
       gallery: [imageUrl], // Default gallery to profile pic
-      deepAnswer1: data.passion,
-      deepAnswer2: data.idealSunday,
-      soulAnalysis: analysis
+      deepAnswer1: deepAnswer1,
+      deepAnswer2: deepAnswer2,
+      soulAnalysis: await analyzeSoulPrint(data.name, deepAnswer1, deepAnswer2),
 
+      // NEW: Inclusive identity fields from onboarding
+      genderIdentity: data.genderIdentity,
+      sexualOrientation: data.sexualOrientation || [],
+      relationshipStructure: data.relationshipStructure,
+      relationshipGoals: data.relationshipGoals,
+      selfDescription: data.selfDescription || [],
+      loveLanguage: data.loveLanguage,
+      languages: data.languages || []
     };
 
     // Save profile to database

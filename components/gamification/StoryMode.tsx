@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ArrowRight, Check } from 'lucide-react';
-import { SOUL_JOURNEY_SCENARIOS, GameScenario, GameScenarioOption } from '../../data/soulJourneyData';
+import { ArrowRight, ArrowLeft, BookOpen, AlertCircle } from 'lucide-react';
+import { STORY_PROMPTS } from '../../data/storyModeQuestions';
 import { saveQuestionnaireAnswers } from '../../services/profileCompletionService';
 
 interface StoryModeProps {
@@ -12,138 +12,174 @@ interface StoryModeProps {
 
 export const StoryMode: React.FC<StoryModeProps> = ({ userId, onComplete, onExit }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, any>>({});
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [showTransition, setShowTransition] = useState(false);
+    const [responses, setResponses] = useState<Record<string, string>>({});
+    const [currentText, setCurrentText] = useState('');
 
-    // Total scenarios
-    const totalScenarios = SOUL_JOURNEY_SCENARIOS.length;
-    const currentScenario = SOUL_JOURNEY_SCENARIOS[currentIndex];
+    const currentPrompt = STORY_PROMPTS[currentIndex];
+    const progress = ((currentIndex + 1) / STORY_PROMPTS.length) * 100;
 
-    // Handle User Choice
-    const handleOptionSelect = async (option: GameScenarioOption) => {
-        if (isAnimating) return;
-        setIsAnimating(true);
-        setShowTransition(true);
+    const handleNext = async () => {
+        // Save current response
+        if (currentText.trim()) {
+            const newResponses = {
+                ...responses,
+                [currentPrompt.id]: currentText
+            };
+            setResponses(newResponses);
 
-        // Save mapped answers to local state
-        const newAnswers = { ...answers, ...option.mappedAnswers };
-        setAnswers(newAnswers);
+            // Save to database incrementally
+            await saveQuestionnaireAnswers(userId, {
+                story_responses: newResponses,
+                questionnaire_mode: 'story'
+            });
+        }
 
-        // Save to DB incrementally (or batch at end - focusing on incremental for safety)
-        await saveQuestionnaireAnswers(userId, option.mappedAnswers);
-
-        // Delay for visual transition
-        setTimeout(() => {
-            if (currentIndex < totalScenarios - 1) {
-                setCurrentIndex(prev => prev + 1);
-                setShowTransition(false);
-                setIsAnimating(false);
-            } else {
-                handleFinish();
-            }
-        }, 1500);
+        if (currentIndex < STORY_PROMPTS.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+            setCurrentText(responses[STORY_PROMPTS[currentIndex + 1]?.id] || '');
+        } else {
+            // Completed all prompts
+            onComplete();
+        }
     };
 
-    const handleFinish = () => {
-        onComplete();
+    const handleBack = () => {
+        if (currentIndex > 0) {
+            setCurrentIndex(currentIndex - 1);
+            setCurrentText(responses[STORY_PROMPTS[currentIndex - 1]?.id] || '');
+        }
     };
 
-    // Calculate progress
-    const progress = ((currentIndex + 1) / totalScenarios) * 100;
+    const handleSkip = async () => {
+        // Save empty response to track skips
+        const newResponses = {
+            ...responses,
+            [currentPrompt.id]: '[skipped]'
+        };
+        setResponses(newResponses);
+
+        await saveQuestionnaireAnswers(userId, {
+            story_responses: newResponses,
+            questionnaire_mode: 'story'
+        });
+
+        if (currentIndex < STORY_PROMPTS.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+            setCurrentText(responses[STORY_PROMPTS[currentIndex + 1]?.id] || '');
+        } else {
+            onComplete();
+        }
+    };
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center transition-colors duration-1000 ${currentScenario.backgroundClass}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900 overflow-hidden">
+            {/* Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 via-stone-900 to-stone-900"></div>
 
-            {/* Background Texture/Overlay */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
+            {/* Exit Button */}
+            <button
+                onClick={onExit}
+                className="absolute top-6 right-6 z-50 text-white/50 hover:text-white uppercase text-xs font-bold tracking-widest transition-colors"
+            >
+                Exit
+            </button>
 
-            {/* Main Game Container */}
-            <div className="relative w-full max-w-6xl h-full md:h-[90vh] md:rounded-3xl bg-white/10 backdrop-blur-md shadow-2xl border border-white/20 overflow-hidden flex flex-col">
+            {/* Progress Bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-stone-800">
+                <motion.div
+                    className="h-full bg-amber-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.3 }}
+                />
+            </div>
 
-                {/* Header: Progress & Exit */}
-                <div className="flex items-center justify-between p-6 md:p-8 z-10">
-                    <button onClick={onExit} className="text-white/60 hover:text-white transition-colors text-sm font-medium uppercase tracking-wider">
-                        Exit Journey
-                    </button>
-                    <div className="flex items-center gap-4">
-                        <span className="text-white/80 font-serif-display text-lg">
-                            Chapter {currentIndex + 1} <span className="text-white/40">/ {totalScenarios}</span>
-                        </span>
-                        <div className="w-24 h-1 bg-white/20 rounded-full overflow-hidden">
-                            <div className="h-full bg-white transition-all duration-500" style={{ width: `${progress}%` }}></div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Content Area */}
-                <div className="flex-1 flex flex-col md:flex-row items-center justify-center p-6 md:p-12 gap-12 relative z-10">
-
-                    {/* Left: Scenario Text */}
-                    <AnimatePresence mode="wait">
-                        {!showTransition && (
-                            <motion.div
-                                key={currentScenario.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="flex-1 space-y-6 max-w-xl"
-                            >
-                                <h2 className="font-serif-display text-5xl md:text-6xl text-white leading-tight drop-shadow-sm">
-                                    {currentScenario.title}
+            {/* Content */}
+            <div className="relative w-full max-w-3xl mx-auto px-8 py-16">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="w-full"
+                    >
+                        {/* Header */}
+                        <div className="text-center mb-12">
+                            <div className="flex items-center justify-center gap-3 mb-4">
+                                <BookOpen className="text-amber-500" size={32} />
+                                <h2 className="text-3xl font-serif-display text-white">
+                                    Story Mode
                                 </h2>
-                                <p className="text-xl md:text-2xl text-white/90 font-light leading-relaxed">
-                                    {currentScenario.scenario}
-                                </p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                            </div>
+                            <p className="text-white/60 text-sm">
+                                Question {currentIndex + 1} of {STORY_PROMPTS.length}
+                            </p>
+                        </div>
 
-                    {/* Right: Options Grid */}
-                    <AnimatePresence mode="wait">
-                        {!showTransition ? (
-                            <motion.div
-                                key={`options-${currentScenario.id}`}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
-                                exit={{ opacity: 0, x: 50 }}
-                                className="flex-1 w-full max-w-md grid grid-cols-1 gap-4"
-                            >
-                                {currentScenario.options.map((option) => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => handleOptionSelect(option)}
-                                        className="group relative flex items-center gap-4 p-5 bg-white/90 hover:bg-white rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left"
-                                    >
-                                        <div className="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-900 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors">
-                                            <option.icon size={20} />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-stone-900 text-lg">{option.text}</h4>
-                                            {option.description && (
-                                                <p className="text-stone-500 text-sm mt-1">{option.description}</p>
-                                            )}
-                                        </div>
-                                        <ChevronRight className="ml-auto text-stone-300 group-hover:text-stone-900 transition-colors" />
-                                    </button>
-                                ))}
-                            </motion.div>
-                        ) : (
-                            /* Transition State Display */
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="absolute inset-0 flex items-center justify-center"
-                            >
-                                <div className="text-center text-white space-y-4">
-                                    <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
-                                    <p className="font-serif-display text-2xl tracking-wide">Weaving your fate...</p>
+                        {/* Prompt Card */}
+                        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 mb-8">
+                            {currentPrompt.sensitive && (
+                                <div className="flex items-start gap-3 mb-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                                    <AlertCircle className="text-amber-500 flex-shrink-0 mt-0.5" size={20} />
+                                    <p className="text-sm text-amber-200">
+                                        This question touches on sensitive topics. Feel free to skip if uncomfortable.
+                                    </p>
                                 </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                            )}
 
+                            <h3 className="text-xl text-white font-serif-display mb-6 leading-relaxed">
+                                {currentPrompt.prompt}
+                            </h3>
+
+                            <textarea
+                                value={currentText}
+                                onChange={(e) => setCurrentText(e.target.value)}
+                                placeholder={currentPrompt.placeholder}
+                                maxLength={currentPrompt.maxLength}
+                                className="w-full h-48 px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 resize-none focus:outline-none focus:border-amber-500/50 transition-colors"
+                            />
+
+                            <div className="flex justify-between items-center mt-4">
+                                <span className="text-xs text-white/40">
+                                    {currentText.length} / {currentPrompt.maxLength} characters
+                                </span>
+                                {currentPrompt.citation && (
+                                    <span className="text-xs text-white/30 italic">
+                                        {currentPrompt.citation}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Navigation */}
+                        <div className="flex justify-between items-center">
+                            <button
+                                onClick={handleBack}
+                                disabled={currentIndex === 0}
+                                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ArrowLeft size={20} />
+                                <span>Back</span>
+                            </button>
+
+                            <button
+                                onClick={handleSkip}
+                                className="px-6 py-3 rounded-lg text-white/50 hover:text-white/80 transition-colors text-sm"
+                            >
+                                Skip if uncomfortable
+                            </button>
+
+                            <button
+                                onClick={handleNext}
+                                className="flex items-center gap-2 px-8 py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors"
+                            >
+                                <span>{currentIndex === STORY_PROMPTS.length - 1 ? 'Complete' : 'Next'}</span>
+                                <ArrowRight size={20} />
+                            </button>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );

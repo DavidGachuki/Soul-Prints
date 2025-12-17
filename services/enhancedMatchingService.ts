@@ -8,11 +8,12 @@ interface EnhancedMatchScore {
     userId: string;
     totalScore: number;
     breakdown: {
-        values: number;           // 30%
-        relationshipGoals: number; // 25%
+        values: number;           // 25%
+        relationshipGoals: number; // 20%
         lifestyle: number;        // 20%
         communication: number;    // 15%
         personality: number;      // 10%
+        language: number;         // 10%
     };
     reasons: string[];
 }
@@ -125,6 +126,24 @@ function scorePersonality(user1LoveLang: string, user2LoveLang: string): number 
     return 60;
 }
 
+// Calculate language compatibility (0-100)
+function scoreLanguages(user1Languages: string[], user2Languages: string[]): number {
+    if (!user1Languages?.length || !user2Languages?.length) return 30; // Penalize if missing
+
+    const sharedLanguages = user1Languages.filter(lang => user2Languages.includes(lang));
+
+    // No common languages = deal-breaker territory
+    if (sharedLanguages.length === 0) return 10;
+
+    // 1 common language = okay
+    if (sharedLanguages.length === 1) return 70;
+
+    // 2+ common languages = excellent
+    if (sharedLanguages.length >= 2) return 95;
+
+    return 50;
+}
+
 // Check for deal-breaker conflicts
 function hasDealBreakerConflict(user1: any, user2: any): boolean {
     const user1Dealbreakers = user1.absolute_dealbreakers || [];
@@ -232,30 +251,37 @@ export async function findEnhancedMatches(userId: string, limit: number = 20): P
                 candidateQ.love_language_primary
             );
 
+            const languageScore = scoreLanguages(
+                currentUser.languages || [],
+                candidate.languages || []
+            );
+
             // Check for deal-breakers
             if (hasDealBreakerConflict(currentQuestionnaire, candidateQ)) {
                 return {
                     userId: candidate.id,
                     totalScore: 0,
-                    breakdown: { values: 0, relationshipGoals: 0, lifestyle: 0, communication: 0, personality: 0 },
+                    breakdown: { values: 0, relationshipGoals: 0, lifestyle: 0, communication: 0, personality: 0, language: 0 },
                     reasons: []
                 };
             }
 
-            // Calculate weighted total score
+            // Calculate weighted total score (updated weights to include language)
             const totalScore =
-                (valuesScore * 0.30) +
-                (goalsScore * 0.25) +
+                (valuesScore * 0.25) +
+                (goalsScore * 0.20) +
                 (lifestyleScore * 0.20) +
                 (communicationScore * 0.15) +
-                (personalityScore * 0.10);
+                (personalityScore * 0.10) +
+                (languageScore * 0.10);
 
             const breakdown = {
                 values: valuesScore,
                 relationshipGoals: goalsScore,
                 lifestyle: lifestyleScore,
                 communication: communicationScore,
-                personality: personalityScore
+                personality: personalityScore,
+                language: languageScore
             };
 
             const reasons = generateMatchReasons(currentQuestionnaire, candidateQ, breakdown);

@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
-import { ChevronRight, ChevronLeft, Upload, Sun, Moon, Coffee, Heart, Zap, Book, Globe } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Upload, Sun, Moon, Coffee, Heart, Zap, Book, Globe, Languages } from 'lucide-react';
+import { WORLD_LANGUAGES, COMMON_WORLD_LANGUAGES, LANGUAGE_REGIONS, getLanguagesByRegion } from '../data/languagesData';
 
 interface OnboardingData {
     name: string;
     age: string;
-    energizer: string;
-    idealSunday: string;
-    sharedVsDiff: number; // 0 to 100
-    photoUrl: string;
-    topic: string;
-    fridayEve: number; // 0 (Quiet) to 100 (Party)
-    passion: string;
+    // Inclusive identity fields
+    genderIdentity?: string;
+    genderSelfDescribe?: string;
+    sexualOrientation?: string[];
+    orientationSelfDescribe?: string;
+    relationshipStructure?: string;
+    relationshipGoals?: string;
+    selfDescription?: string[];
+    loveLanguage?: string;
+    languages?: string[];
 }
 
 interface OnboardingViewProps {
@@ -25,16 +29,18 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete, isLo
     const [data, setData] = useState<OnboardingData>({
         name: '',
         age: '',
-        energizer: '',
-        idealSunday: '',
-        sharedVsDiff: 50,
-        photoUrl: '',
-        topic: '',
-        fridayEve: 50,
-        passion: ''
+        genderIdentity: undefined,
+        genderSelfDescribe: '',
+        sexualOrientation: [],
+        orientationSelfDescribe: '',
+        relationshipStructure: undefined,
+        relationshipGoals: undefined,
+        selfDescription: [],
+        loveLanguage: undefined,
+        languages: []
     });
 
-    const totalSteps = 8; // 0 (Intro/Name) + 7 questions
+    const totalSteps = 8; // 0 (Name/Age) + 7 questions (6 inclusive + 1 languages)
 
     const handleNext = () => setStep(prev => Math.min(prev + 1, totalSteps - 1));
     const handleBack = () => setStep(prev => Math.max(prev - 1, 0));
@@ -81,230 +87,259 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({ onComplete, isLo
                     </div>
                 );
 
-            case 1: // Q1: Energizers
+            case 1: // NEW: Gender Identity
                 return (
                     <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 01</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What energizes you most?</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What is your gender identity?</h2>
+                            <p className="text-sm text-warm-subtext mt-2">You can skip this if you prefer</p>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
-                            {['Creating', 'Exploring', 'Learning', 'Connecting', 'Relaxing'].map((opt) => (
+                            {['Woman', 'Man', 'Non-binary', 'Prefer to self-describe', 'Prefer not to answer'].map((opt) => (
                                 <button
                                     key={opt}
-                                    onClick={() => { update('energizer', opt); setTimeout(handleNext, 300); }}
-                                    className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between group ${data.energizer === opt ? 'border-editorial-accent bg-editorial-accent/5' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
+                                    onClick={() => {
+                                        update('genderIdentity', opt);
+                                        if (opt !== 'Prefer to self-describe') setTimeout(handleNext, 300);
+                                    }}
+                                    className={`p-4 rounded-xl border-2 transition-all ${data.genderIdentity === opt ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
                                 >
-                                    <span className={`font-medium ${data.energizer === opt ? 'text-editorial-accent' : 'text-warm-text'}`}>{opt}</span>
-                                    {data.energizer === opt && <Zap size={18} className="text-editorial-accent" />}
+                                    <span className="font-medium">{opt}</span>
                                 </button>
                             ))}
                         </div>
+                        {data.genderIdentity === 'Prefer to self-describe' && (
+                            <div className="animate-fade-in">
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    value={data.genderSelfDescribe}
+                                    onChange={(e) => update('genderSelfDescribe', e.target.value)}
+                                    placeholder="How do you identify?"
+                                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-editorial-accent"
+                                />
+                                <Button className="w-full mt-3" variant="primary" onClick={handleNext} disabled={!data.genderSelfDescribe}>
+                                    Next
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 );
 
-            case 2: // Q2: Ideal Sunday
+            case 2: // NEW: Sexual Orientation
                 return (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 02</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Describe your ideal Sunday in 3 activities.</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What is your sexual orientation?</h2>
+                            <p className="text-sm text-warm-subtext mt-2">Select all that apply</p>
                         </div>
-                        <textarea
-                            value={data.idealSunday}
-                            onChange={e => update('idealSunday', e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-6 text-xl font-serif text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 min-h-[160px] resize-none placeholder:text-gray-300 placeholder:italic"
-                            placeholder="e.g., Morning coffee, thrift shopping, cooking dinner..."
-                        />
-                        <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.idealSunday}>
+                        <div className="grid grid-cols-1 gap-3">
+                            {['Gay/Lesbian', 'Bisexual', 'Straight/Heterosexual', 'Pansexual', 'Queer', 'Asexual', 'Aromantic', 'Prefer not to answer'].map((opt) => {
+                                const isSelected = data.sexualOrientation?.includes(opt);
+                                return (
+                                    <button
+                                        key={opt}
+                                        onClick={() => {
+                                            const current = data.sexualOrientation || [];
+                                            if (opt === 'Prefer not to answer') {
+                                                update('sexualOrientation', [opt]);
+                                            } else {
+                                                const filtered = current.filter(o => o !== 'Prefer not to answer');
+                                                update('sexualOrientation', isSelected ? filtered.filter(o => o !== opt) : [...filtered, opt]);
+                                            }
+                                        }}
+                                        className={`p-4 rounded-xl border-2 transition-all ${isSelected ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
+                                    >
+                                        <span className="font-medium">{opt}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.sexualOrientation || data.sexualOrientation.length === 0}>
                             Next
                         </Button>
                     </div>
                 );
 
-            case 3: // Q3: Shared vs Diff (Slider)
+            case 3: // NEW: Relationship Structure
                 return (
                     <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 03</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What matters more?</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Which relationship structure do you prefer?</h2>
                         </div>
-
-                        <div className="px-4 py-8">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={data.sharedVsDiff}
-                                onChange={e => update('sharedVsDiff', parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-editorial-accent"
-                            />
-                            <div className="flex justify-between mt-4 text-sm font-bold text-warm-subtext uppercase tracking-wide">
-                                <span className={data.sharedVsDiff < 50 ? 'text-editorial-accent' : ''}>Shared Hobbies</span>
-                                <span className={data.sharedVsDiff > 50 ? 'text-editorial-accent' : ''}>Differences</span>
-                            </div>
+                        <div className="grid grid-cols-1 gap-3">
+                            {['Monogamous (one partner)', 'Polyamorous (multiple partners)', 'Open (non-monogamous with transparency)', 'Polyfidelity', 'Other', 'Prefer not to say'].map((opt) => (
+                                <button
+                                    key={opt}
+                                    onClick={() => { update('relationshipStructure', opt); setTimeout(handleNext, 300); }}
+                                    className={`p-4 rounded-xl border-2 transition-all ${data.relationshipStructure === opt ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
+                                >
+                                    <span className="font-medium">{opt}</span>
+                                </button>
+                            ))}
                         </div>
-
-                        <Button className="w-full" variant="primary" onClick={handleNext}>
-                            Next
-                        </Button>
                     </div>
                 );
 
-            case 4: // Q4: Photo Interest
+            case 4: // NEW: Relationship Goals
                 return (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 04</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Show us one interest.</h2>
-                            <p className="text-warm-subtext text-sm mt-2">Upload a photo that represents you</p>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What are you looking for right now?</h2>
                         </div>
-
-                        <label className="bg-gray-50 rounded-2xl p-8 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-4 hover:border-editorial-accent/50 transition-colors cursor-pointer">
-                            {data.photoUrl ? (
-                                <img src={data.photoUrl} alt="Interest" className="w-32 h-32 object-cover rounded-lg shadow-md" />
-                            ) : (
-                                <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
-                                    <Upload className="text-gray-400" />
-                                </div>
-                            )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                        // Show preview immediately
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => {
-                                            update('photoUrl', reader.result as string);
-                                        };
-                                        reader.readAsDataURL(file);
-
-                                        // Store file for later upload
-                                        (window as any).__pendingPhotoFile = file;
-                                    }
-                                }}
-                            />
-                            <p className="text-sm text-warm-subtext">Click to upload an image</p>
-                        </label>
-
-                        <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.photoUrl}>
-                            Next
-                        </Button>
-                        <button onClick={() => { update('photoUrl', 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1'); handleNext(); }} className="w-full text-xs text-warm-subtext hover:text-warm-text">
-                            Skip (Use Placeholder)
-                        </button>
+                        <div className="grid grid-cols-1 gap-3">
+                            {['Long-term commitment/marriage', 'Serious relationship', 'Casual dating/friendship', 'Marriage eventually', 'Unsure/Exploring'].map((opt) => (
+                                <button
+                                    key={opt}
+                                    onClick={() => { update('relationshipGoals', opt); setTimeout(handleNext, 300); }}
+                                    className={`p-4 rounded-xl border-2 transition-all ${data.relationshipGoals === opt ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
+                                >
+                                    <span className="font-medium">{opt}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 );
 
-            case 5: // Q5: Discuss Topic
+            case 5: // NEW: Self Description
                 return (
                     <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 05</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Which would you rather discuss for 20 minutes?</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Which of these best describes you?</h2>
+                            <p className="text-sm text-warm-subtext mt-2">Select up to 3</p>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            {[
-                                { id: 'travel', label: 'Travel Stories', icon: <Globe size={20} /> },
-                                { id: 'reading', label: 'Recent Reads', icon: <Book size={20} /> },
-                                { id: 'tech', label: 'Innovations', icon: <Zap size={20} /> },
-                                { id: 'growth', label: 'Personal Growth', icon: <Sun size={20} /> }
-                            ].map((opt) => (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => { update('topic', opt.label); setShowOtherInput(false); setTimeout(handleNext, 300); }}
-                                    className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-3 text-center ${data.topic === opt.label && !showOtherInput ? 'border-editorial-accent bg-editorial-accent text-white shadow-lg scale-105' : 'border-gray-100 bg-white text-warm-text hover:border-gray-200 hover:shadow-sm'}`}
-                                >
-                                    <span className={(data.topic === opt.label && !showOtherInput) ? 'text-white' : 'text-editorial-accent'}>{opt.icon}</span>
-                                    <span className="font-medium text-sm">{opt.label}</span>
-                                </button>
-                            ))}
+                            {['Ambitious/Career-focused', 'Family-oriented', 'Free-spirited/Adventurous', 'Homebody/Coziness', 'Socially active/Extroverted', 'Reflective/Introverted', 'Creative/Artistic', 'Logical/Analytical'].map((opt) => {
+                                const isSelected = data.selfDescription?.includes(opt);
+                                const count = data.selfDescription?.length || 0;
+                                return (
+                                    <button
+                                        key={opt}
+                                        onClick={() => {
+                                            const current = data.selfDescription || [];
+                                            if (isSelected) {
+                                                update('selfDescription', current.filter(o => o !== opt));
+                                            } else if (count < 3) {
+                                                update('selfDescription', [...current, opt]);
+                                            }
+                                        }}
+                                        className={`p-4 rounded-xl border-2 transition-all ${isSelected ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'} ${!isSelected && count >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        disabled={!isSelected && count >= 3}
+                                    >
+                                        <span className="font-medium text-sm">{opt}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
-
-                        {/* Other Option */}
-                        <div className="pt-2">
-                            {!showOtherInput ? (
-                                <button
-                                    onClick={() => setShowOtherInput(true)}
-                                    className="w-full text-warm-subtext text-sm hover:text-editorial-accent underline"
-                                >
-                                    Something else?
-                                </button>
-                            ) : (
-                                <div className="animate-fade-in space-y-2">
-                                    <label className="text-xs font-bold uppercase tracking-wide text-warm-subtext">Custom Topic</label>
-                                    <input
-                                        autoFocus
-                                        type="text"
-                                        value={data.topic}
-                                        onChange={(e) => update('topic', e.target.value)}
-                                        placeholder="e.g., Ancient History"
-                                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-editorial-accent"
-                                    />
-                                    <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.topic}>
-                                        Confirm
-                                    </Button>
-                                    <button onClick={() => setShowOtherInput(false)} className="w-full text-xs text-warm-subtext mt-2">Cancel</button>
-                                </div>
-                            )}
-                        </div>
+                        <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.selfDescription || data.selfDescription.length === 0}>
+                            Next ({data.selfDescription?.length || 0}/3 selected)
+                        </Button>
                     </div>
                 );
 
-            case 6: // Q6: Friday Eve (Slider)
+            case 6: // NEW: Languages Spoken
                 return (
                     <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Question 06</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Your typical Friday evening?</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">Which languages do you speak?</h2>
+                            <p className="text-sm text-warm-subtext mt-2">Select all that apply</p>
                         </div>
 
-                        <div className="px-4 py-12">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={data.fridayEve}
-                                onChange={e => update('fridayEve', parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-editorial-accent"
-                            />
-                            <div className="flex justify-between mt-6">
-                                <div className={`flex flex-col items-center gap-2 ${data.fridayEve < 40 ? 'text-editorial-accent' : 'text-gray-400'}`}>
-                                    <Coffee size={24} />
-                                    <span className="text-xs font-bold uppercase tracking-wide">Quiet Night In</span>
-                                </div>
-                                <div className={`flex flex-col items-center gap-2 ${data.fridayEve > 60 ? 'text-editorial-accent' : 'text-gray-400'}`}>
-                                    <Zap size={24} />
-                                    <span className="text-xs font-bold uppercase tracking-wide">Night Out</span>
-                                </div>
+                        {/* Common languages section */}
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wide text-warm-subtext mb-3">Most Common</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                {WORLD_LANGUAGES.filter(lang => COMMON_WORLD_LANGUAGES.includes(lang.code)).map((lang) => {
+                                    const isSelected = data.languages?.includes(lang.code);
+                                    return (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => {
+                                                const current = data.languages || [];
+                                                update('languages', isSelected ? current.filter(l => l !== lang.code) : [...current, lang.code]);
+                                            }}
+                                            className={`p-3 rounded-xl border-2 transition-all flex items-center gap-2 ${isSelected ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
+                                        >
+                                            <Globe size={16} className={isSelected ? 'text-editorial-accent' : 'text-gray-400'} />
+                                            <div className="text-left">
+                                                <div className="font-medium text-sm">{lang.name}</div>
+                                                <div className="text-xs opacity-60">{lang.native}</div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        <Button className="w-full" variant="primary" onClick={handleNext}>
-                            Next
+                        {/* Browse by region */}
+                        <details className="group">
+                            <summary className="cursor-pointer text-sm text-editorial-accent hover:underline font-medium">
+                                + Browse by Region
+                            </summary>
+                            <div className="mt-4 space-y-4 max-h-80 overflow-y-auto">
+                                {LANGUAGE_REGIONS.map(region => {
+                                    const regionLangs = getLanguagesByRegion(region);
+                                    return (
+                                        <div key={region}>
+                                            <p className="text-xs font-bold uppercase tracking-wide text-warm-subtext mb-2">{region}</p>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {regionLangs.map((lang) => {
+                                                    const isSelected = data.languages?.includes(lang.code);
+                                                    return (
+                                                        <button
+                                                            key={lang.code}
+                                                            onClick={() => {
+                                                                const current = data.languages || [];
+                                                                update('languages', isSelected ? current.filter(l => l !== lang.code) : [...current, lang.code]);
+                                                            }}
+                                                            className={`p-2 rounded-lg border transition-all text-left ${isSelected ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-gray-200 bg-white hover:border-gray-300 text-warm-text'}`}
+                                                        >
+                                                            <div className="font-medium text-xs">{lang.name}</div>
+                                                            <div className="text-[10px] opacity-60">{lang.native}</div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </details>
+
+                        <Button className="w-full" variant="primary" onClick={handleNext} disabled={!data.languages || data.languages.length === 0}>
+                            Next ({data.languages?.length || 0} selected)
                         </Button>
                     </div>
                 );
 
-            case 7: // Q7: Surprising Passion
+            case 7: // NEW: Love Language (FINAL STEP)
                 return (
-                    <div className="space-y-6 animate-fade-in">
+                    <div className="space-y-8 animate-fade-in">
                         <div className="text-center">
                             <span className="text-xs font-bold tracking-widest text-editorial-accent uppercase">Final Question</span>
-                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">One thing you're passionate about that surprises people.</h2>
+                            <h2 className="font-serif text-2xl font-bold text-warm-text mt-2">What's your primary love language?</h2>
                         </div>
-                        <textarea
-                            value={data.passion}
-                            onChange={e => update('passion', e.target.value)}
-                            className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-6 text-xl font-serif text-warm-text focus:outline-none focus:ring-2 focus:ring-brand-primary/20 min-h-[160px] resize-none placeholder:text-gray-300 placeholder:italic"
-                            placeholder="e.g., I collect vintage typewriters..."
-                        />
-                        <Button className="w-full" variant="primary" onClick={() => onComplete(data)} isLoading={isLoading} disabled={!data.passion}>
-                            Complete Profile
-                        </Button>
+                        <div className="grid grid-cols-1 gap-3">
+                            {['Quality Time', 'Words of Affirmation', 'Acts of Service', 'Physical Touch', 'Gifts'].map((opt) => (
+                                <button
+                                    key={opt}
+                                    onClick={() => {
+                                        const updatedData = { ...data, loveLanguage: opt };
+                                        update('loveLanguage', opt);
+                                        setTimeout(() => onComplete(updatedData), 300);
+                                    }}
+                                    className={`p-4 rounded-xl border-2 transition-all ${data.loveLanguage === opt ? 'border-editorial-accent bg-editorial-accent/5 text-editorial-accent' : 'border-transparent bg-gray-50 hover:bg-gray-100 text-warm-text'}`}
+                                >
+                                    <span className="font-medium">{opt}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 );
 

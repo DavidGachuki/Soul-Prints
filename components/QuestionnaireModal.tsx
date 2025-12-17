@@ -16,9 +16,10 @@ interface QuestionnaireModalProps {
 import { QuestionnaireModeSelector } from './QuestionnaireModeSelector';
 import { StoryMode } from './gamification/StoryMode';
 import { ArcadeMode } from './gamification/ArcadeMode';
+import { QuickListMode } from './gamification/QuickListMode';
 
 export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({ userId, isOpen, onClose, onComplete }) => {
-    const [mode, setMode] = useState<'select' | 'quiz' | 'game' | 'arcade'>('select');
+    const [mode, setMode] = useState<'select' | 'quiz' | 'game' | 'arcade' | 'story' | 'quicklist'>('select');
     const [prompts, setPrompts] = useState<QuestionnairePrompt[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -254,6 +255,28 @@ export const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({ userId, 
 
             {mode === 'arcade' && (
                 <ArcadeMode
+                    userId={userId}
+                    onComplete={() => {
+                        onComplete();
+                        onClose();
+                    }}
+                    onExit={() => setMode('select')}
+                />
+            )}
+
+            {mode === 'story' && (
+                <StoryMode
+                    userId={userId}
+                    onComplete={() => {
+                        onComplete();
+                        onClose();
+                    }}
+                    onExit={() => setMode('select')}
+                />
+            )}
+
+            {mode === 'quicklist' && (
+                <QuickListMode
                     userId={userId}
                     onComplete={() => {
                         onComplete();

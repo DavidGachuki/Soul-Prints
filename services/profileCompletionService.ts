@@ -35,6 +35,10 @@ export interface QuestionnaireAnswers {
     idealWeekend?: string;
     lifeGoals?: string;
     passionProject?: string;
+    // New fields for enhanced questionnaire
+    story_responses?: Record<string, string>;
+    quick_list_selections?: string[];
+    questionnaire_mode?: 'arcade' | 'story' | 'quicklist';
 }
 
 /**

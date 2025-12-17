@@ -11,6 +11,25 @@ export interface UserProfile {
   deepAnswer1: string; // "What keeps you up at night?"
   deepAnswer2: string; // "What is your perfect Sunday?"
   soulAnalysis?: string; // AI generated persona
+  // Inclusive identity fields
+  genderIdentity?: 'woman' | 'man' | 'non-binary' | 'self-describe' | 'prefer-not-to-answer';
+  genderSelfDescribe?: string;
+  sexualOrientation?: string[]; // Multi-select
+  orientationSelfDescribe?: string;
+  relationshipStructure?: 'monogamous' | 'polyamorous' | 'open' | 'polyfidelity' | 'other' | 'prefer-not-to-answer';
+  relationshipGoals?: string; // Long-term, exploring, etc.
+  selfDescription?: string[]; // Up to 3 trait selections
+  loveLanguage?: string; // Primary love language
+  attachmentStyle?: 'secure' | 'anxious' | 'avoidant' | 'disorganized' | 'unknown';
+  languages?: string[]; // Language codes (e.g., ['en', 'es', 'fr'])
+  // Enhanced personality data
+  bigFiveTraits?: {
+    openness?: number;
+    conscientiousness?: number;
+    extraversion?: number;
+    agreeableness?: number;
+    neuroticism?: number;
+  };
   settings?: UserSettings;
 }
 

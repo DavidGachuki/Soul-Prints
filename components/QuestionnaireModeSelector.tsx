@@ -2,7 +2,7 @@ import React from 'react';
 import { ClipboardList, Sparkles, ArrowRight, Gamepad2 } from 'lucide-react';
 
 interface QuestionnaireModeSelectorProps {
-    onSelectMode: (mode: 'quiz' | 'game' | 'arcade') => void;
+    onSelectMode: (mode: 'quiz' | 'game' | 'arcade' | 'story' | 'quicklist') => void;
 }
 
 export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps> = ({ onSelectMode }) => {
@@ -11,13 +11,13 @@ export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps>
             <div className="text-center mb-12 space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-stone-100 border border-stone-200 text-stone-600 text-xs font-medium tracking-[0.2em] uppercase">
                     <Sparkles size={14} className="text-purple-600" />
-                    <span>Profile Completion</span>
+                    <span>Build Your Soul Print</span>
                 </div>
                 <h2 className="font-serif-display text-4xl md:text-5xl text-stone-900 leading-tight">
-                    Choose your path.
+                    Choose your style.
                 </h2>
                 <p className="text-stone-500 max-w-lg mx-auto text-lg font-light leading-relaxed">
-                    This helps us connect you to your soul mate as our AI learns. Select how you want to build your Soul Print.
+                    Complete your profile to unlock deeper AI matching. Pick the format that suits your vibe.
                 </p>
             </div>
 
@@ -37,7 +37,7 @@ export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps>
                         Arcade Mode
                     </h3>
                     <p className="relative z-10 text-stone-400 text-xs leading-relaxed mb-4">
-                        Play mini-games like Bubble Pop & Speed Swipe to build your profile.
+                        Play 4 mini-games: Pop bubbles, swipe cards, defend dealbreakers, rank priorities.
                     </p>
 
                     <span className="relative z-10 inline-block px-3 py-1 bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider rounded-full border border-purple-500/30">
@@ -45,9 +45,9 @@ export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps>
                     </span>
                 </button>
 
-                {/* Option 2: Story Mode (Formerly Soul Journey) */}
+                {/* Option 2: Story Mode */}
                 <button
-                    onClick={() => onSelectMode('game')}
+                    onClick={() => onSelectMode('story')}
                     className="group relative flex flex-col items-center text-center p-6 bg-white border border-stone-200 rounded-2xl hover:border-purple-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                 >
                     <div className="relative z-10 w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-50 transition-colors">
@@ -58,13 +58,17 @@ export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps>
                         Story Mode
                     </h3>
                     <p className="relative z-10 text-stone-500 text-xs leading-relaxed mb-4">
-                        Immersive scenarios. "What would you do?" narrative experience.
+                        Answer 8 reflective prompts about relationships, growth, and values.
                     </p>
+
+                    <span className="relative z-10 inline-block px-3 py-1 bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-wider rounded-full border border-amber-500/20">
+                        Most Depth
+                    </span>
                 </button>
 
-                {/* Option 3: Quick Quiz */}
+                {/* Option 3: Quick List */}
                 <button
-                    onClick={() => onSelectMode('quiz')}
+                    onClick={() => onSelectMode('quicklist')}
                     className="group relative flex flex-col items-center text-center p-6 bg-white border border-stone-200 rounded-2xl hover:border-stone-400 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                 >
                     <div className="relative z-10 w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-stone-100 transition-colors">
@@ -75,8 +79,12 @@ export const QuestionnaireModeSelector: React.FC<QuestionnaireModeSelectorProps>
                         Quick List
                     </h3>
                     <p className="relative z-10 text-stone-500 text-xs leading-relaxed mb-4">
-                        Standard efficient form. Just get it done.
+                        Check 20 items across values, personality, lifestyle, and relationship needs.
                     </p>
+
+                    <span className="relative z-10 inline-block px-3 py-1 bg-green-500/10 text-green-600 text-[10px] font-bold uppercase tracking-wider rounded-full border border-green-500/20">
+                        Quickest
+                    </span>
                 </button>
             </div>
         </div>
